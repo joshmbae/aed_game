@@ -9,6 +9,7 @@ import {
 import { FIXED_SCENARIO, ACTION_COLORS } from './constants';
 import ActionKey from './components/ActionKey';
 import MetricsChart from './components/MetricsChart';
+import RedLogo from './assets/Red.svg';
 
 const STORAGE_KEY = 'aed_pro_db_v2';
 
@@ -51,10 +52,12 @@ const Header: React.FC<HeaderProps> = ({ view, setView, onStationClick }) => (
   <nav className="w-full flex items-center justify-between py-8 z-50 relative border-b border-white/10 mb-10">
     <div className="flex items-center gap-8">
       {/* Main Title / Logo */}
-      <div className="flex items-center gap-4 cursor-pointer group" onClick={onStationClick}>
-        <div className="w-12 h-12 rounded-xl bg-red-600 flex items-center justify-center shadow-[0_0_20px_rgba(239,68,68,0.4)] group-hover:scale-105 transition-transform duration-300">
-           <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-        </div>
+         <div className="flex items-center gap-4 cursor-pointer group" onClick={onStationClick}>
+            <img
+               src={RedLogo}
+               alt="AED Sportec Solutions"
+               className="w-15 h-12 rounded-xl bg-white object-contain p-0.4 shadow-[0_0_20px_rgba(239,68,68,0.4)] group-hover:scale-105 transition-transform duration-300"
+            />
         <div>
            <h1 className="text-3xl font-black tracking-tight leading-none text-white">AED<span className="text-red-500"> Sportec Solutions</span></h1>
            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-400 mt-1">Annotation Game</p>
