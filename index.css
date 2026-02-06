@@ -1,0 +1,14 @@
+/* Project base stylesheet for Vite build. */
+/* Tailwind is loaded via CDN in index.html; add any global overrides here. */
+
+:root {
+  --app-font: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica Neue, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  font-family: var(--app-font);
+}
