@@ -10,6 +10,9 @@ import { FIXED_SCENARIO, ACTION_COLORS } from './constants';
 import ActionKey from './components/ActionKey';
 import MetricsChart from './components/MetricsChart';
 import RedLogo from './assets/Red.svg';
+import STSLogo from './assets/sts_logo.svg';
+import DFLLogo from './assets/dfl_logo.svg';
+import AWSLogo from './assets/aws_logo.svg';
 
 const STORAGE_KEY = 'aed_pro_db_v2';
 
@@ -165,9 +168,13 @@ const IntroView: React.FC<IntroViewProps> = ({ onProceed }) => (
     </div>
 
     {/* POWERED BY FOOTER */}
-    <div className="fixed bottom-8 right-12 z-50 flex items-center gap-6 opacity-40 hover:opacity-100 transition-opacity duration-500">
-        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-600 mr-2">Powered By</span>
-        <span className="text-xs font-bold text-zinc-500 tracking-widest uppercase">Sportec Solutions &bull; DFL &bull; AWS</span>
+   <div className="fixed bottom-8 right-12 z-50 flex items-center gap-6 opacity-40 hover:opacity-100 transition-opacity duration-500">
+      <span className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Powered By</span>
+      <div className="flex items-center gap-5">
+         <img src={STSLogo} alt="Sportec Solutions" className="h-6 w-auto object-contain drop-shadow" />
+         <img src={DFLLogo} alt="DFL" className="h-8 w-auto object-contain drop-shadow" />
+         <img src={AWSLogo} alt="AWS" className="h-6 w-auto object-contain drop-shadow" />
+      </div>
     </div>
 
   </div>
