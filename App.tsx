@@ -88,10 +88,10 @@ const IntroView: React.FC<IntroViewProps> = ({ onProceed }) => (
            <div className="space-y-6 lg:pt-6">
               <div>
                 <h1 className="text-6xl xl:text-7xl font-black tracking-tighter text-white mb-6 leading-[0.9]">
-                   <span className="text-transparent bg-clip-text bg-gradient-to-br from-red-500 to-red-600">Beat</span> AED.
+                   <span className="text-transparent bg-clip-text bg-gradient-to-br from-red-500 to-red-600">AED</span> CHALLENGE
                 </h1>
                 <p className="text-zinc-400 text-xl max-w-2xl font-medium border-l-4 border-red-600 pl-6 leading-relaxed">
-                  Try to beat Sportec Solutions Automated Event Detection (AED). 
+                  Try to compete with Sportec Solutions Automated Event Detection (AED). 
                   <br />
                   AED is an AI-based annotation system that automatically detects 4,000+ football events per match. 
                   <br /><br />
