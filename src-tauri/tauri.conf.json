@@ -1,8 +1,8 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "AED Analytics Pro",
+  "productName": "AED Challenge",
   "version": "0.1.0",
-  "identifier": "com.aed.analyticspro",
+  "identifier": "com.aed.challenge",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:5173",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "AED Analytics Pro",
+        "title": "AED Challenge",
         "width": 1280,
         "height": 720,
         "resizable": true,
