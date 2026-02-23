@@ -22,10 +22,10 @@ export const FIXED_SCENARIO: MatchScenario = {
   name: 'FC Bayern vs Dortmund (Min 37)',
   context: 'Press start when you are ready.',
   targets: {
-    Pass: 14,
-    Shot: 1,
-    Scan: 18,
-    Touch: 5,
-    Reception: 10
+    Pass: 11,
+    Shot: 2,
+    Scan: 37,
+    Touch: 21,
+    Reception: 11
   }
 };
