@@ -95,7 +95,7 @@ const IntroView: React.FC<IntroViewProps> = ({ onProceed }) => (
                   <br />
                   AED is an AI-based annotation system that automatically detects 4,000+ football events per match. 
                   <br /><br />
-                  Can you annotate events faster and more accurately than the AI? You have 60 seconds, Good Luck!
+                  Can you compete with AED and annotate events as fast and accurately as the AI? You have 60 seconds, Good Luck!
                 </p>
               </div>
            </div>

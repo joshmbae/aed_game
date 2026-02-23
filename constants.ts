@@ -18,8 +18,8 @@ export const ACTION_GRADIENTS: Record<ActionType, string> = {
 };
 
 export const FIXED_SCENARIO: MatchScenario = {
-  id: 'SCN-2024-M37-BAY-DOR',
-  name: 'FC Bayern vs Dortmund (Min 37)',
+  id: 'SCN-2024-M37-KOL-BAY',
+  name: '1. FC Köln vs FC Bayern München (Min 45+4)',
   context: 'Press start when you are ready.',
   targets: {
     Pass: 11,
