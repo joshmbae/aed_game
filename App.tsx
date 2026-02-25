@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { 
   ACTIONS, 
   ActionType, 
@@ -8,13 +8,14 @@ import {
 } from './types';
 import { FIXED_SCENARIO, ACTION_COLORS } from './constants';
 import ActionKey from './components/ActionKey';
-import MetricsChart from './components/MetricsChart';
+// MetricsChart removed: replaced by explanatory info in Analysis view
 import RedLogo from './assets/Red.svg';
 import STSLogo from './assets/sts_logo.svg';
 import DFLLogo from './assets/dfl_logo.svg';
 import AWSLogo from './assets/aws_logo.svg';
 
 const STORAGE_KEY = 'aed_pro_db_v2';
+const AED_EVENTS_PER_MATCH = 116;
 
 // --- Helper Functions ---
 const createEmptyCounts = (): Record<ActionType, number> =>
@@ -36,11 +37,11 @@ const generateId = () => {
 };
 
 const EVENT_DESCRIPTIONS: Record<string, string> = {
-  Reception: "First touch of a player.",
-  Touch: "Every touch that is not a reception, pass, or shot.",
-  Pass: "Ball release intended to reach a teammate.",
-  Shot: "Ball release intended to strike a goal.",
-  Scan: "Orientation action of a player of the team with ball possession."
+   Touch: "Any controlled or uncontrolled ball contact, that is not a pass or shot.",
+   Pass: "Ball release intended to reach a teammate.",
+   Shot: "Ball release intended to strike a goal.",
+   Duel: "1v1 contest for ball control on the ground or in the air.",
+   Carry: "Controlled on-ball run over 5 meters."
 };
 
 // --- Sub-Components ---
@@ -93,7 +94,7 @@ const IntroView: React.FC<IntroViewProps> = ({ onProceed }) => (
                 <p className="text-zinc-400 text-xl max-w-2xl font-medium border-l-4 border-red-600 pl-6 leading-relaxed">
                   Try to compete with Sportec Solutions Automated Event Detection (AED). 
                   <br />
-                  AED is an AI-based annotation system that automatically detects 4,000+ football events per match. 
+                  AED is an AI-based annotation system that automatically detects 5,000+ football events per match. 
                   <br /><br />
                   Can you compete with AED and annotate events as fast and accurately as the AI? You have 60 seconds, Good Luck!
                 </p>
@@ -240,56 +241,158 @@ interface ActiveViewProps {
     handleAction: (t: ActionType) => void;
     handleUndo: () => void;
     handleStop: () => void;
+    scenarioVideoUrl?: string;
 }
 
-const ActiveView: React.FC<ActiveViewProps> = ({ elapsed, operator, eventCount, counts, handleAction, handleUndo, handleStop }) => (
-    <div className="w-full max-w-[1920px] mx-auto animate-in zoom-in-95 duration-300 flex flex-col h-full">
-       {/* HUD */}
-       <div className="flex items-center justify-between mb-8 bg-[#111111] border border-white/10 p-6 rounded-2xl shadow-2xl relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-red-900/10 to-transparent pointer-events-none"></div>
-          
-          <div className="flex items-center gap-6 relative z-10">
-             <div className="w-4 h-4 bg-red-600 rounded-sm animate-pulse shadow-[0_0_15px_#ef4444]"></div>
-             <div className="flex flex-col">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 mb-1">Session Clock</span>
-                <span className="text-4xl font-mono font-black text-white tabular-nums tracking-tighter">{formatTime(elapsed)}</span>
-             </div>
-          </div>
-          
-          <div className="relative z-10">
-             <div className="px-10 py-3 bg-black/40 rounded-xl border border-white/5 backdrop-blur-md">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 block mb-1 text-center">Operator</span>
-                <span className="text-xl font-black uppercase tracking-widest text-white text-center block">{operator}</span>
-             </div>
-          </div>
+const ActiveView: React.FC<ActiveViewProps> = ({
+    elapsed,
+    operator,
+    eventCount,
+    counts,
+    handleAction,
+    handleUndo,
+    handleStop,
+    scenarioVideoUrl
+}) => {
+    const videoRef = useRef<HTMLVideoElement | null>(null);
+    const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+    const videoUnavailable = !scenarioVideoUrl;
 
-          <div className="flex flex-col text-right relative z-10">
-             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 mb-1">Total Events</span>
-             <span className="text-4xl font-mono font-black text-white tabular-nums tracking-tighter">{eventCount}</span>
-          </div>
-       </div>
+    useEffect(() => {
+        if (videoRef.current) {
+            videoRef.current.pause();
+            videoRef.current.currentTime = 0;
+        }
+        setIsVideoPlaying(false);
+    }, [scenarioVideoUrl]);
 
-       {/* Input Grid - Expanded Size */}
-       <div className="grid grid-cols-2 md:grid-cols-5 gap-6 mb-10 flex-1">
-          {ACTIONS.map((action, i) => (
-             <ActionKey 
-               key={action}
-               action={action}
-               count={counts[action]}
-               onClick={() => handleAction(action)}
-               disabled={false}
-               shortcut={(i+1).toString()}
-             />
-          ))}
-       </div>
+    const handleVideoPlay = () => {
+        if (!videoRef.current) return;
+        videoRef.current.play().catch(() => {});
+    };
 
-       {/* Footer Controls */}
-       <div className="flex gap-6 border-t border-white/10 pt-10">
-          <button onClick={handleUndo} disabled={eventCount === 0} className="px-12 py-6 rounded-xl border border-zinc-700 bg-[#18181b] text-zinc-400 font-black uppercase tracking-widest text-sm hover:bg-zinc-800 hover:text-white transition-all disabled:opacity-30 shadow-lg hover:shadow-xl hover:-translate-y-0.5">Undo Last Action</button>
-          <button onClick={handleStop} className="flex-1 py-6 rounded-xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-black uppercase tracking-[0.2em] text-lg shadow-[0_0_30px_rgba(220,38,38,0.3)] transition-all transform hover:-translate-y-1 border border-red-500/50">Complete Session</button>
-       </div>
-    </div>
-);
+    const handleVideoPause = () => {
+        if (!videoRef.current) return;
+        videoRef.current.pause();
+    };
+
+    const handleVideoReset = () => {
+        if (!videoRef.current) return;
+        videoRef.current.pause();
+        videoRef.current.currentTime = 0;
+        setIsVideoPlaying(false);
+    };
+
+    return (
+        <div className="w-full max-w-[1920px] mx-auto animate-in zoom-in-95 duration-300 flex flex-col h-full">
+           <div className="flex items-center justify-between mb-6 bg-[#111111] border border-white/10 p-4 md:p-5 rounded-2xl shadow-2xl relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-red-900/10 to-transparent pointer-events-none"></div>
+              
+              <div className="flex items-center gap-4 relative z-10">
+                 <div className="w-4 h-4 bg-red-600 rounded-sm animate-pulse shadow-[0_0_15px_#ef4444]"></div>
+                 <div className="flex flex-col">
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 mb-1">Session Clock</span>
+                    <span className="text-3xl md:text-4xl font-mono font-black text-white tabular-nums tracking-tighter">{formatTime(elapsed)}</span>
+                 </div>
+              </div>
+              
+              <div className="relative z-10">
+                 <div className="px-8 py-2.5 bg-black/40 rounded-xl border border-white/5 backdrop-blur-md">
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 block mb-1 text-center">Operator</span>
+                    <span className="text-xl font-black uppercase tracking-widest text-white text-center block">{operator}</span>
+                 </div>
+              </div>
+
+              <div className="flex flex-col text-right relative z-10">
+                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 mb-1">Total Events</span>
+                 <span className="text-3xl md:text-4xl font-mono font-black text-white tabular-nums tracking-tighter">{eventCount}</span>
+              </div>
+           </div>
+
+           <div className="flex flex-col lg:flex-row flex-1 gap-6 items-stretch">
+              <div className="flex-1 flex flex-col">
+                 <div
+                    className="bg-black rounded-[32px] border border-white/10 overflow-hidden relative shadow-2xl w-full"
+                    style={{ aspectRatio: '16 / 9', maxHeight: '620px' }}
+                 >
+                    {scenarioVideoUrl ? (
+                        <video
+                            ref={videoRef}
+                            src={scenarioVideoUrl}
+                            className="w-full h-full object-cover"
+                            playsInline
+                            preload="auto"
+                            onPlay={() => setIsVideoPlaying(true)}
+                            onPause={() => setIsVideoPlaying(false)}
+                            onEnded={() => setIsVideoPlaying(false)}
+                        >
+                            Your browser does not support embedded videos.
+                        </video>
+                    ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-center text-zinc-500 font-black uppercase tracking-[0.3em]">
+                            <span>No video configured</span>
+                            <span className="text-[10px] text-zinc-600">Add a videoUrl to FIXED_SCENARIO</span>
+                        </div>
+                    )}
+
+                    <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+               </div>
+              </div>
+
+              <div className="w-full lg:max-w-[420px] lg:self-stretch">
+                 <div className="bg-[#111111] border border-white/10 rounded-3xl p-6 h-full flex flex-col gap-6 shadow-2xl">
+                    <div className="flex items-center justify-between">
+                       <h3 className="text-sm font-black uppercase tracking-[0.3em] text-zinc-400">Event Actions</h3>
+                       <span className="text-[10px] uppercase tracking-[0.3em] text-zinc-600">Tap or press 1–5</span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
+                       {ACTIONS.map((action, i) => (
+                          <ActionKey 
+                            key={action}
+                            action={action}
+                            count={counts[action]}
+                            onClick={() => handleAction(action)}
+                            disabled={false}
+                            shortcut={(i+1).toString()}
+                            variant="compact"
+                          />
+                       ))}
+                    </div>
+                 </div>
+              </div>
+           </div>
+
+            <div className="flex flex-wrap gap-3 mt-6">
+              <button
+                 onClick={handleVideoPlay}
+                 disabled={videoUnavailable || isVideoPlaying}
+                 className="px-6 py-3 rounded-xl border border-white/10 bg-white text-black font-black uppercase tracking-widest text-xs disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                 Start Clip
+              </button>
+              <button
+                 onClick={handleVideoPause}
+                 disabled={videoUnavailable || !isVideoPlaying}
+                 className="px-6 py-3 rounded-xl border border-white/10 bg-zinc-900 text-white font-black uppercase tracking-widest text-xs hover:bg-zinc-800 disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                 Pause Clip
+              </button>
+              <button
+                 onClick={handleVideoReset}
+                 disabled={videoUnavailable}
+                 className="px-6 py-3 rounded-xl border border-white/10 bg-zinc-900 text-white font-black uppercase tracking-widest text-xs hover:bg-zinc-800 disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                 Reset Clip
+              </button>
+            </div>
+
+           <div className="flex gap-6 border-t border-white/10 pt-10 mt-10">
+              <button onClick={handleUndo} disabled={eventCount === 0} className="px-12 py-6 rounded-xl border border-zinc-700 bg-[#18181b] text-zinc-400 font-black uppercase tracking-widest text-sm hover:bg-zinc-800 hover:text-white transition-all disabled:opacity-30 shadow-lg hover:shadow-xl hover:-translate-y-0.5">Undo Last Action</button>
+              <button onClick={handleStop} className="flex-1 py-6 rounded-xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-black uppercase tracking-[0.2em] text-lg shadow-[0_0_30px_rgba(220,38,38,0.3)] transition-all transform hover:-translate-y-1 border border-red-500/50">Complete Session</button>
+           </div>
+        </div>
+    );
+};
 
 interface AnalysisViewProps {
     lastRecord: SessionRecord;
@@ -303,6 +406,19 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ lastRecord, leaderboard, ha
      // Calculate total truth events
      const totalTruth = Object.values(lastRecord.targets).reduce((a, b) => a + b, 0);
      const totalDetected = lastRecord.totalEvents;
+     const aedPerMatch = AED_EVENTS_PER_MATCH;
+     const volumeComparison = [
+        {
+           label: 'Number of manual events',
+           value: totalTruth,
+           gradient: 'linear-gradient(90deg, #f87171 0%, #b91c1c 100%)'
+        },
+        {
+           label: 'Number of AED events',
+           value: aedPerMatch,
+           gradient: 'linear-gradient(90deg, #22d3ee 0%, #0ea5e9 100%)'
+        }
+     ];
 
      // Feedback Logic
      let feedbackText = "";
@@ -395,13 +511,64 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ lastRecord, leaderboard, ha
                  </div>
              </div>
 
-             {/* Right: Chart */}
-             <div className="pro-card p-8 rounded-3xl flex flex-col bg-[#111111] min-h-[420px] border border-white/10">
-                <div className="mb-4">
-                   <h3 className="font-black uppercase tracking-widest text-sm text-zinc-400">Visual Comparison</h3>
+             {/* Right: AED Context / Comparison */}
+             <div className="pro-card p-8 rounded-3xl flex flex-col bg-[#0f0f0f] min-h-[420px] border border-white/10">
+                <div className="space-y-3 mb-8">
+                   <h3 className="text-2xl font-black text-white tracking-tight">AED detects 50+ more events in the same minute.</h3>
                 </div>
-                <div className="flex-1">
-                   <MetricsChart counts={lastRecord.counts} targets={lastRecord.targets} />
+
+                <div className="mb-8">
+                   <div className="space-y-4">
+                      {volumeComparison.map(bar => {
+                         const isAEDBar = bar.label.toLowerCase().includes('aed');
+                         const normalizedValue = isAEDBar ? 100 : (bar.value / aedPerMatch) * 100;
+                         const widthPercent = Math.min(100, Math.max(18, normalizedValue));
+                         return (
+                            <div key={bar.label} className="space-y-2">
+                               <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.3em] text-zinc-500">
+                                  <span>{bar.label}</span>
+                                  <span className="text-white text-base tracking-tight font-black">{bar.value.toLocaleString()}</span>
+                               </div>
+                               <div className="h-4 md:h-5 rounded-full bg-[#151515] border border-white/5 overflow-hidden">
+                                  <div
+                                     className="h-full rounded-full transition-all"
+                                     style={{
+                                        background: bar.gradient,
+                                        width: `${widthPercent}%`
+                                     }}
+                                  ></div>
+                               </div>
+                            </div>
+                         );
+                      })}
+                   </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+                   <div className="rounded-2xl p-4 bg-gradient-to-b from-[#1a1a1a] to-[#111] border border-white/10">
+                      <p className="text-[1.2rem] font-black text-white tracking-wide">Scans</p>
+                      <p className="text-[1.2rem] text-zinc-100 font-black tracking-tight">+37</p>
+                      <p className="text-[11px] uppercase tracking-[0.3em] text-zinc-500">tracked actions</p>
+                   </div>
+                   <div className="rounded-2xl p-4 bg-gradient-to-b from-[#101e26] to-[#0a1318] border border-cyan-500/20">
+                      <p className="text-[1.25rem] font-black text-white tracking-wide">Off-ball runs</p>
+                      <p className="text-[1.25rem] text-cyan-100 font-black tracking-tight">+24</p>
+                      <p className="text-[11px] uppercase tracking-[0.3em] text-cyan-200/90">tracked actions</p>
+                   </div>
+                   <div className="rounded-2xl p-4 bg-gradient-to-b from-[#1a1024] to-[#0e0913] border border-purple-500/20">
+                      <p className="text-[1.2rem] font-black text-white tracking-wide">Attributes</p>
+                      <p className="text-[1.2rem] text-purple-100 font-black tracking-tight">+20</p>
+                      <p className="text-[11px] uppercase tracking-[0.3em] text-purple-200/80">per event</p>
+                   </div>
+                </div>
+
+                <div className="rounded-3xl border border-white/10 bg-gradient-to-r from-[#0a0a0a] via-[#111111] to-[#090909] p-6 lg:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 text-zinc-300">
+                   <div className="space-y-2">
+                      <p className="text-[15px] font-black uppercase tracking-[0.4em] text-zinc-500">Automated Event Detection</p>
+                      <p className="text-[0.5rem] md:text-4xl font-black text-white leading-tight">5000+ events logged by AED</p>
+                      <p className="text-[15px] uppercase tracking-[0.3em] text-zinc-500">per Bundesliga match</p>
+                   </div>
+
                 </div>
              </div>
           </div>
@@ -633,7 +800,8 @@ const App: React.FC = () => {
                 counts={counts} 
                 handleAction={handleAction} 
                 handleUndo={handleUndo} 
-                handleStop={handleStop} 
+                        handleStop={handleStop}
+                        scenarioVideoUrl={FIXED_SCENARIO.videoUrl}
               />
             )}
             {view === ViewState.ANALYSIS && lastRecord && (

@@ -8,12 +8,26 @@ interface ActionKeyProps {
   onClick: () => void;
   disabled: boolean;
   shortcut?: string;
+  variant?: 'default' | 'compact';
 }
 
-const ActionKey: React.FC<ActionKeyProps> = ({ action, count, onClick, disabled, shortcut }) => {
+const ActionKey: React.FC<ActionKeyProps> = ({ action, count, onClick, disabled, shortcut, variant = 'default' }) => {
   const [active, setActive] = useState(false);
   const color = ACTION_COLORS[action];
   const timeoutRef = useRef<number | null>(null);
+  const sizing = variant === 'compact' 
+    ? {
+        container: 'p-4 h-36 lg:h-40',
+        actionLabel: 'text-lg',
+        countText: 'text-4xl',
+        icon: 'text-2xl'
+      }
+    : {
+        container: 'p-8 h-52 lg:h-64',
+        actionLabel: 'text-2xl',
+        countText: 'text-7xl',
+        icon: 'text-4xl'
+      };
 
   // Memoized handler to process both click and keyboard events safely
   const handlePress = useCallback(() => {
@@ -63,7 +77,7 @@ const ActionKey: React.FC<ActionKeyProps> = ({ action, count, onClick, disabled,
       onClick={handlePress}
       disabled={disabled}
       className={`
-        relative overflow-hidden flex flex-col justify-between p-8 w-full text-left rounded-2xl select-none touch-manipulation h-52 lg:h-64
+        relative overflow-hidden flex flex-col justify-between w-full text-left rounded-2xl select-none touch-manipulation ${sizing.container}
         ${disabled 
           ? 'opacity-30 cursor-not-allowed bg-zinc-900 border border-white/5 grayscale' 
           : 'tactile-btn group hover:border-white/20'
@@ -78,7 +92,7 @@ const ActionKey: React.FC<ActionKeyProps> = ({ action, count, onClick, disabled,
       {/* Top Row */}
       <div className="flex justify-between items-start w-full relative z-10 pointer-events-none">
         <span 
-          className="text-2xl font-black uppercase tracking-widest transition-colors"
+          className={`${sizing.actionLabel} font-black uppercase tracking-widest transition-colors`}
           style={{ color: !disabled ? color : '#52525b' }}
         >
           {action}
@@ -94,14 +108,14 @@ const ActionKey: React.FC<ActionKeyProps> = ({ action, count, onClick, disabled,
 
       <div className="flex items-end justify-between relative z-10 mt-auto pointer-events-none">
         <span 
-            className={`font-mono text-7xl font-black leading-none transition-colors duration-75 ${active ? 'text-white' : 'text-zinc-100'}`}
+            className={`font-mono ${sizing.countText} font-black leading-none transition-colors duration-75 ${active ? 'text-white' : 'text-zinc-100'}`}
             style={{ textShadow: active ? `0 0 20px ${color}` : 'none' }}
         >
           {count.toString().padStart(2, '0')}
         </span>
         
         {/* Action Icon / Letter */}
-        <span className="text-4xl font-black opacity-10 group-hover:opacity-20 transition-opacity" style={{ color: color }}>
+        <span className={`${sizing.icon} font-black opacity-10 group-hover:opacity-20 transition-opacity`} style={{ color: color }}>
              {action.charAt(0)}
         </span>
       </div>

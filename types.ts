@@ -1,12 +1,13 @@
-export type ActionType = "Reception" | "Touch" | "Pass" | "Shot" | "Scan";
+export type ActionType = "Touch" | "Pass" | "Shot" | "Duel" | "Carry";
 
-export const ACTIONS: ActionType[] = ["Reception", "Touch", "Pass", "Shot", "Scan"];
+export const ACTIONS: ActionType[] = ["Touch", "Pass", "Shot", "Duel", "Carry"];
 
 export interface MatchScenario {
   id: string;
   name: string;
   context: string;
   targets: Record<ActionType, number>;
+  videoUrl?: string;
 }
 
 export interface HistoryEvent {
