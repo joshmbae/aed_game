@@ -44,6 +44,12 @@ const EVENT_DESCRIPTIONS: Record<string, string> = {
    Carry: "Controlled on-ball run over 5 meters."
 };
 
+interface CustomVideoSelection {
+   src: string;
+   label: string;
+   revokeOnCleanup?: boolean;
+}
+
 // --- Sub-Components ---
 
 interface HeaderProps {
@@ -242,6 +248,10 @@ interface ActiveViewProps {
     handleUndo: () => void;
     handleStop: () => void;
     scenarioVideoUrl?: string;
+   onSelectVideo: () => void;
+   selectedVideoLabel?: string;
+   onClearCustomVideo?: () => void;
+   isCustomVideo?: boolean;
 }
 
 const ActiveView: React.FC<ActiveViewProps> = ({
@@ -252,11 +262,16 @@ const ActiveView: React.FC<ActiveViewProps> = ({
     handleAction,
     handleUndo,
     handleStop,
-    scenarioVideoUrl
+   scenarioVideoUrl,
+   onSelectVideo,
+   selectedVideoLabel,
+   onClearCustomVideo,
+   isCustomVideo
 }) => {
     const videoRef = useRef<HTMLVideoElement | null>(null);
     const [isVideoPlaying, setIsVideoPlaying] = useState(false);
     const videoUnavailable = !scenarioVideoUrl;
+   const displayVideoLabel = selectedVideoLabel ?? 'Default Clip';
 
     useEffect(() => {
         if (videoRef.current) {
@@ -335,7 +350,24 @@ const ActiveView: React.FC<ActiveViewProps> = ({
                         </div>
                     )}
 
-                    <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+                              <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+                              <div className="absolute top-6 right-6 flex flex-col items-end gap-2 z-20">
+                                 <button
+                                    onClick={onSelectVideo}
+                                    className="px-4 py-2 rounded-full border border-white/10 bg-black/70 text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-black/60"
+                                 >
+                                    Change Clip
+                                 </button>
+                                 {onClearCustomVideo && (
+                                    <button
+                                       onClick={onClearCustomVideo}
+                                       className="px-3 py-1.5 rounded-full border border-white/5 bg-white/10 text-white text-[9px] font-black uppercase tracking-[0.3em]"
+                                    >
+                                       Reset
+                                    </button>
+                                 )}
+                              </div>
+
                </div>
               </div>
 
@@ -669,6 +701,16 @@ const App: React.FC = () => {
   const [lastRecord, setLastRecord] = useState<SessionRecord | null>(null);
   const [leaderboard, setLeaderboard] = useState<SessionRecord[]>([]);
   const [isResetting, setIsResetting] = useState(false);
+   const [customVideo, setCustomVideo] = useState<CustomVideoSelection | null>(null);
+   const browserVideoInputRef = useRef<HTMLInputElement | null>(null);
+
+   useEffect(() => {
+      return () => {
+         if (customVideo?.revokeOnCleanup) {
+            URL.revokeObjectURL(customVideo.src);
+         }
+      };
+   }, [customVideo]);
 
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -777,9 +819,38 @@ const App: React.FC = () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(newLeaderboard));
   };
 
+   const handleBrowserFilePicked = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      const objectUrl = URL.createObjectURL(file);
+      setCustomVideo({
+         src: objectUrl,
+         label: file.name,
+         revokeOnCleanup: true,
+      });
+      event.target.value = '';
+   }, [setCustomVideo]);
+
+   const requestVideoSelection = useCallback(() => {
+      browserVideoInputRef.current?.click();
+   }, []);
+
+   const clearCustomVideo = useCallback(() => {
+      setCustomVideo(null);
+   }, [setCustomVideo]);
+
+   const scenarioVideoSource = customVideo?.src ?? FIXED_SCENARIO.videoUrl;
+
   return (
     <div className="min-h-screen relative selection:bg-red-500/30">
-      <div className="w-full px-8 md:px-16 pb-20 relative z-10 flex flex-col min-h-screen">
+         <input
+            ref={browserVideoInputRef}
+            type="file"
+            accept="video/*"
+            className="hidden"
+            onChange={handleBrowserFilePicked}
+         />
+         <div className="w-full px-8 md:px-16 pb-20 relative z-10 flex flex-col min-h-screen">
         <Header view={view} setView={setView} onStationClick={handleStationClick} />
         <main className="flex-1 flex flex-col justify-center">
             {view === ViewState.IDLE && (
@@ -801,7 +872,11 @@ const App: React.FC = () => {
                 handleAction={handleAction} 
                 handleUndo={handleUndo} 
                         handleStop={handleStop}
-                        scenarioVideoUrl={FIXED_SCENARIO.videoUrl}
+                                    scenarioVideoUrl={scenarioVideoSource}
+                                    onSelectVideo={requestVideoSelection}
+                                    selectedVideoLabel={customVideo?.label}
+                                    onClearCustomVideo={customVideo ? clearCustomVideo : undefined}
+                                    isCustomVideo={Boolean(customVideo)}
               />
             )}
             {view === ViewState.ANALYSIS && lastRecord && (
