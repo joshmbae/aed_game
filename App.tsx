@@ -330,44 +330,43 @@ const ActiveView: React.FC<ActiveViewProps> = ({
                     className="bg-black rounded-[32px] border border-white/10 overflow-hidden relative shadow-2xl w-full"
                     style={{ aspectRatio: '16 / 9', maxHeight: '620px' }}
                  >
-                    {scenarioVideoUrl ? (
+                     {scenarioVideoUrl ? (
                         <video
-                            ref={videoRef}
-                            src={scenarioVideoUrl}
-                            className="w-full h-full object-cover"
-                            playsInline
-                            preload="auto"
-                            onPlay={() => setIsVideoPlaying(true)}
-                            onPause={() => setIsVideoPlaying(false)}
-                            onEnded={() => setIsVideoPlaying(false)}
+                           ref={videoRef}
+                           src={scenarioVideoUrl}
+                           className="w-full h-full object-cover"
+                           playsInline
+                           preload="auto"
+                           onPlay={() => setIsVideoPlaying(true)}
+                           onPause={() => setIsVideoPlaying(false)}
+                           onEnded={() => setIsVideoPlaying(false)}
                         >
-                            Your browser does not support embedded videos.
+                           Your browser does not support embedded videos.
                         </video>
-                    ) : (
+                     ) : (
                         <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-center text-zinc-500 font-black uppercase tracking-[0.3em]">
-                            <span>No video configured</span>
-                            <span className="text-[10px] text-zinc-600">Add a videoUrl to FIXED_SCENARIO</span>
+                           <span>No video configured</span>
+                           <span className="text-[10px] text-zinc-600">Add a videoUrl to FIXED_SCENARIO</span>
                         </div>
-                    )}
+                     )}
 
-                              <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
-                              <div className="absolute top-6 right-6 flex flex-col items-end gap-2 z-20">
-                                 <button
-                                    onClick={onSelectVideo}
-                                    className="px-4 py-2 rounded-full border border-white/10 bg-black/70 text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-black/60"
-                                 >
-                                    Change Clip
-                                 </button>
-                                 {onClearCustomVideo && (
-                                    <button
-                                       onClick={onClearCustomVideo}
-                                       className="px-3 py-1.5 rounded-full border border-white/5 bg-white/10 text-white text-[9px] font-black uppercase tracking-[0.3em]"
-                                    >
-                                       Reset
-                                    </button>
-                                 )}
-                              </div>
-
+                     <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+                     <div className="absolute top-6 right-6 flex flex-col items-end gap-2 z-20">
+                        <button
+                           onClick={onSelectVideo}
+                           className="px-4 py-2 rounded-full border border-white/10 bg-black/70 text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-black/60"
+                        >
+                           Change Clip
+                        </button>
+                        {onClearCustomVideo && (
+                           <button
+                              onClick={onClearCustomVideo}
+                              className="px-3 py-1.5 rounded-full border border-white/5 bg-white/10 text-white text-[9px] font-black uppercase tracking-[0.3em]"
+                           >
+                              Reset
+                           </button>
+                        )}
+                     </div>
                </div>
               </div>
 
@@ -394,7 +393,7 @@ const ActiveView: React.FC<ActiveViewProps> = ({
               </div>
            </div>
 
-            <div className="flex flex-wrap gap-3 mt-6">
+                  <div className="flex flex-wrap gap-3 mt-8 pt-6 border-t border-white/10">
               <button
                  onClick={handleVideoPlay}
                  disabled={videoUnavailable || isVideoPlaying}
@@ -416,12 +415,28 @@ const ActiveView: React.FC<ActiveViewProps> = ({
               >
                  Reset Clip
               </button>
+              <button
+                 onClick={handleUndo}
+                 disabled={eventCount === 0}
+                 className="px-8 py-4 md:px-12 md:py-5 rounded-xl border border-zinc-700 bg-[#18181b] text-zinc-400 font-black uppercase tracking-widest text-xs md:text-sm hover:bg-zinc-800 hover:text-white transition-all disabled:opacity-30 shadow-lg hover:shadow-xl"
+              >
+                 Undo Last Action
+              </button>
+              <button
+                 onClick={handleStop}
+                 className="px-8 py-4 md:px-12 md:py-5 rounded-xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-black uppercase tracking-[0.2em] text-xs md:text-sm shadow-[0_0_30px_rgba(220,38,38,0.3)] transition-all border border-red-500/50 min-w-[220px]"
+              >
+                 Complete Session
+              </button>
             </div>
 
-           <div className="flex gap-6 border-t border-white/10 pt-10 mt-10">
-              <button onClick={handleUndo} disabled={eventCount === 0} className="px-12 py-6 rounded-xl border border-zinc-700 bg-[#18181b] text-zinc-400 font-black uppercase tracking-widest text-sm hover:bg-zinc-800 hover:text-white transition-all disabled:opacity-30 shadow-lg hover:shadow-xl hover:-translate-y-0.5">Undo Last Action</button>
-              <button onClick={handleStop} className="flex-1 py-6 rounded-xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-black uppercase tracking-[0.2em] text-lg shadow-[0_0_30px_rgba(220,38,38,0.3)] transition-all transform hover:-translate-y-1 border border-red-500/50">Complete Session</button>
-           </div>
+            {scenarioVideoUrl && (
+              <div className="mt-6 text-[10px] uppercase tracking-[0.3em] text-zinc-700 flex items-center gap-3">
+                <span className="opacity-40">Clip:</span>
+                <span className="text-zinc-600 opacity-40">{displayVideoLabel}</span>
+                {isCustomVideo && <span className="px-2 py-0.5 rounded-full border border-white/5 text-zinc-500">Local</span>}
+              </div>
+            )}
         </div>
     );
 };
